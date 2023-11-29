@@ -1,3 +1,4 @@
+// Container.js
 import React, { useState } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -7,14 +8,15 @@ import Button from '@mui/material/Button';
 import AddItemModal from './AddItemModal';
 
 const Container = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleAdd = (item) => {
-    // Add your logic here to handle the addition of the item
-    console.log('Adding item:', item);
-    // For now, just close the modal
-    setIsModalOpen(false);
-  };
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  
+    const handleAdd = (item) => {
+      // Add your logic here to handle the addition of the item
+      console.log('Adding item:', item);
+      // For now, just close the modal
+      setIsModalOpen(false);
+    };
+  
 
   return (
     <Card style={{ marginTop: '20px', width: '1900px', height: '300px', position: 'relative', borderRadius: '20px' }}>
@@ -56,7 +58,7 @@ const Container = () => {
         >
           Add Check-in
         </Button>
-        <AddItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAdd} />
+        <AddItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAdd} setIsModalOpen={setIsModalOpen} />
       </CardContent>
     </Card>
   );

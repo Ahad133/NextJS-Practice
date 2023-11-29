@@ -6,24 +6,22 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-const AddItemModal = ({ isOpen, onClose, onAdd }) => {
+const AddItemModal = ({ isOpen, onClose, onAdd, setIsModalOpen }) => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
 
   const handleAdd = () => {
     if (image) {
-      // Simulate file upload process
       const reader = new FileReader();
 
       reader.onloadend = () => {
-        // Once the file is read, you can use the result to display the image or perform further actions
         const imageUrl = reader.result;
         console.log('File uploaded:', imageUrl);
 
-        // Handle the rest of your logic, e.g., update state, display the image, etc.
-        // ...
+        // Call the onAdd prop to handle the addition of the item
+        onAdd({ title, imageUrl });
 
-        // For now, just close the modal
+        // Close the modal using the prop
         setIsModalOpen(false);
       };
 
@@ -46,6 +44,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
     event.preventDefault();
     event.stopPropagation();
   };
+
 
   return (
     <Modal open={isOpen} onClose={onClose}>
