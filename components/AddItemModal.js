@@ -10,22 +10,24 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
 
-  const handleAdd = async () => {
-    if (title && image) {
-      try {
-        const imageUrl = 'https://example.com/default-image.jpg'; // Replace with actual image URL
+  const handleAdd = () => {
+    if (image) {
+      // Simulate file upload process
+      const reader = new FileReader();
 
-        const newItem = {
-          title: title,
-          imageUrl: imageUrl,
-          date: new Date().toLocaleString(),
-        };
+      reader.onloadend = () => {
+        // Once the file is read, you can use the result to display the image or perform further actions
+        const imageUrl = reader.result;
+        console.log('File uploaded:', imageUrl);
 
-        onAdd(newItem);
-        onClose();
-      } catch (error) {
-        console.error('Error adding item:', error.message);
-      }
+        // Handle the rest of your logic, e.g., update state, display the image, etc.
+        // ...
+
+        // For now, just close the modal
+        setIsModalOpen(false);
+      };
+
+      reader.readAsDataURL(image);
     }
   };
 
@@ -85,7 +87,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'center', // Center the content horizontally
           }}
           onClick={() => document.getElementById('fileInput').click()}
           onDrop={handleDrop}
@@ -101,7 +103,9 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             accept="image/*"
             style={{ display: 'none' }}
           />
-          <Typography variant="body1">Click or drop file anywhere in this area to upload</Typography>
+          <Typography variant="body1">
+            Click or drop file anywhere in this area to upload
+          </Typography>
           <Typography variant="body2" color="textSecondary">
             Support for single or bulk upload. Strictly prohibit from uploading company data or other banned files.
           </Typography>
@@ -114,19 +118,10 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             width: '100%',
           }}
         >
-          <Button
-            onClick={onClose}
-            variant="outlined"
-            style={{ marginRight: '8px', color: 'black', borderColor: 'grey', borderRadius: '20px' }}
-          >
+          <Button onClick={onClose} variant="outlined" style={{ marginRight: '8px', color:'black', borderColor:'grey', borderRadius:'20px' }}>
             Cancel
           </Button>
-          <Button
-            onClick={handleAdd}
-            variant="contained"
-            style={{ backgroundColor: '#7c57ff', color: 'white', borderRadius: '20px' }}
-            disabled={!title || !image}
-          >
+          <Button onClick={handleAdd} variant="contained" style={{backgroundColor:'#7c57ff', color:'white', borderRadius:'20px'}} disabled={!title || !image}>
             Add
           </Button>
         </div>
