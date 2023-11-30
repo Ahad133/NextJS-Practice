@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { serverTimestamp } from 'firebase/firestore';
-import { firestore } from '../firebase/firebaseConfig';
 
 const preventDefault = (event) => {
   event.preventDefault();
@@ -17,37 +16,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
   const [imageUploaded, setImageUploaded] = useState(false);
-
-  const handleAdd = async () => {
-  if (image && title) {
-    const reader = new FileReader();
-
-    reader.onloadend = async () => {
-      const imageUrl = reader.result;
-      console.log('File uploaded:', imageUrl);
-      await onAdd({ title, imageUrl });
-      setTitle('');
-      setImage(null);
-      setImageUploaded(false);
-      onClose();
-    };
-
-    reader.readAsDataURL(image);
-  }
-};
-
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    setImage(file);
-    setImageUploaded(true);
-  };
-
-  const handleDrop = (event) => {
-    preventDefault(event);
-    const file = event.dataTransfer.files[0];
-    setImage(file);
-    setImageUploaded(true);
-  };
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleUploadClick = () => {
     const fileInput = document.getElementById('fileInput');
@@ -56,12 +25,60 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
     }
   };
 
+  const handleDrop = (event) => {
+    preventDefault(event);
+    const file = event.dataTransfer.files[0];
+
+    if (file && file.size > 1024 * 1024) {
+      setErrorMessage('File size exceeds 1MB limit.');
+      return;
+    }
+
+    setImage(file);
+    setImageUploaded(true);
+    setErrorMessage('');
+  };
+
   const handleCancel = () => {
     setTitle('');
     setImage(null);
     setImageUploaded(false);
+    setErrorMessage('');
     onClose();
   };
+
+  const handleAdd = async () => {
+    if (image && title) {
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        const imageUrl = reader.result;
+        console.log('File uploaded:', imageUrl);
+        await onAdd({ title, imageUrl });
+        setTitle('');
+        setImage(null);
+        setImageUploaded(false);
+        setErrorMessage('');
+        onClose();
+      };
+
+      reader.readAsDataURL(image);
+    }
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file && file.size > 1024 * 1024) {
+      setErrorMessage('File size exceeds 1MB limit.');
+      return;
+    }
+
+    setImage(file);
+    setImageUploaded(true);
+    setErrorMessage('');
+  };
+
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -134,6 +151,11 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             </>
           )}
         </div>
+        {errorMessage && (
+          <Typography variant="body2" color="error" sx={{ marginTop: '8px' }}>
+            {errorMessage}
+          </Typography>
+        )}
         <div
           style={{
             display: 'flex',
