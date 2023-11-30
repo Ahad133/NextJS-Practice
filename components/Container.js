@@ -23,7 +23,7 @@ const Container = () => {
     };
   
   return (
-    <Card style={{ marginTop: '20px', width: '1900px', height: '300px', position: 'relative', borderRadius: '20px' }}>
+    <Card style={{ marginTop: '20px', width: '100%', height: '300px', position: 'relative', borderRadius: '20px' }}>
       <CardMedia
         component="img"
         height="100%"
