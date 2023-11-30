@@ -16,19 +16,25 @@ const preventDefault = (event) => {
 const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
+  const [imageUploaded, setImageUploaded] = useState(false);
 
   const handleAdd = async () => {
-    if (image) {
+    if (image && title) {
       const reader = new FileReader();
-
+  
       reader.onloadend = async () => {
         const imageUrl = reader.result;
         console.log('File uploaded:', imageUrl);
-
+  
         await onAdd({ title, imageUrl });
+  
+        // Clear the title, image, and imageUploaded after successful upload
+        setTitle('');
+        setImage(null);
+        setImageUploaded(false);
         onClose();
       };
-
+  
       reader.readAsDataURL(image);
     }
   };
@@ -36,12 +42,32 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     setImage(file);
+    setImageUploaded(true);
   };
 
   const handleDrop = (event) => {
     preventDefault(event);
     const file = event.dataTransfer.files[0];
     setImage(file);
+    setImageUploaded(false);
+  };
+
+  const handleUploadClick = () => {
+    // Check if image is uploaded and fileInput exists
+    const fileInput = document.getElementById('fileInput');
+  
+    // If image is not uploaded, or if it's uploaded but the fileInput is not set, open the file input
+    if (!imageUploaded || !fileInput) {
+      fileInput && fileInput.click();
+    }
+  };
+
+  const handleCancel = () => {
+    // Clear the title and image when the user cancels
+    setTitle('');
+    setImage(null);
+    setImageUploaded(false);
+    onClose();
   };
 
   return (
@@ -73,7 +99,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
         />
         <div
           style={{
-            border: '2px dashed #aaaaaa',
+            border: `2px dashed ${imageUploaded ? 'green' : '#aaaaaa'}`,
             padding: '20px',
             textAlign: 'center',
             cursor: 'pointer',
@@ -86,26 +112,34 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}
-          onClick={() => document.getElementById('fileInput').click()}
+          onClick={handleUploadClick}
           onDrop={handleDrop}
           onDragOver={preventDefault}
           onDragEnter={preventDefault}
           onDragLeave={preventDefault}
         >
-          <CloudUploadIcon style={{ fontSize: 40, color: '#7c57ff', marginBottom: '5px' }} />
-          <input
-            id="fileInput"
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            style={{ display: 'none' }}
-          />
-          <Typography variant="body1">
-            Click or drop file anywhere in this area to upload
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Support for single or bulk upload. Strictly prohibit from uploading company data or other banned files.
-          </Typography>
+          {imageUploaded ? (
+            <Typography variant="body1" color="green">
+              Image Uploaded
+            </Typography>
+          ) : (
+            <>
+              <CloudUploadIcon style={{ fontSize: 40, color: '#7c57ff', marginBottom: '5px' }} />
+              <input
+                id="fileInput"
+                type="file"
+                onChange={handleImageChange}
+                accept="image/*"
+                style={{ display: 'none' }}
+              />
+              <Typography variant="body1">
+                Click or drop file anywhere in this area to upload
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Support for single or bulk upload. Strictly prohibit from uploading company data or other banned files.
+              </Typography>
+            </>
+          )}
         </div>
         <div
           style={{
@@ -115,10 +149,15 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
             width: '100%',
           }}
         >
-          <Button onClick={onClose} variant="outlined" style={{ marginRight: '8px', color:'black', borderColor:'grey', borderRadius:'20px' }}>
+          <Button onClick={handleCancel} variant="outlined" style={{ marginRight: '8px', color:'black', borderColor:'grey', borderRadius:'20px' }}>
             Cancel
           </Button>
-          <Button onClick={handleAdd} variant="contained" style={{backgroundColor:'#7c57ff', color:'white', borderRadius:'20px'}} disabled={!title || !image}>
+          <Button
+            onClick={handleAdd}
+            variant="contained"
+            style={{ backgroundColor: '#7c57ff', color: 'white', borderRadius: '20px' }}
+            disabled={!title || !image}
+          >
             Add
           </Button>
         </div>
