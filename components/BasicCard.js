@@ -1,68 +1,95 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Slider from 'react-slick';
-import { Card, CardContent, CardMedia, Typography, Button, CardActions } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Avatar, Grid } from '@mui/material';
+import { format } from 'date-fns';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { firestore } from '../firebase/firebaseConfig';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-const cards = [
-  {
-    image: '/static/images/cards/contemplative-reptile.jpg',
-    title: 'Lizard 1',
-    description:
-      'Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica',
-  },
-  {
-    image: '/static/images/cards/contemplative-reptile.jpg',
-    title: 'Lizard 2',
-    description:
-      'Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica',
-  },
-  {
-    image: '/static/images/cards/contemplative-reptile.jpg',
-    title: 'Lizard 2',
-    description:
-      'Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica',
-  },
-  {
-    image: '/static/images/cards/contemplative-reptile.jpg',
-    title: 'Lizard 2',
-    description:
-      'Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica',
-  },
-];
-
 const BasicCard = () => {
-    const settings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 3, // Adjust the number of slides to show at once
-        slidesToScroll: 1,
-      };
-    
-      return (
-        <Slider {...settings}>
-          {cards.map((card, index) => (
-            <div key={index}>
-              <Card sx={{ maxWidth: 345 }}>
-                <CardMedia sx={{ height: 140 }} image={card.image} title={card.title} />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {card.title}
+  const [firebaseData, setFirebaseData] = useState([]);
+  const sliderRef = useRef();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const itemsCollection = collection(firestore, 'items');
+
+        const unsubscribe = onSnapshot(itemsCollection, (querySnapshot) => {
+          const data = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          setFirebaseData(data);
+
+          if (sliderRef.current) {
+            sliderRef.current.slickNext();
+          }
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error fetching data from Firebase:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const settings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: firebaseData.length < 4 ? firebaseData.length : 4,
+    slidesToScroll: 1,
+  };
+
+  return (
+    <Slider ref={sliderRef} {...settings}>
+      {firebaseData.map((data) => (
+        <div key={data.id}>
+          <Card sx={{ maxWidth: 345, borderRadius: '20px' }}>
+            <CardMedia
+              sx={{
+                height: 140,
+                width: '90%',
+                margin: 'auto',
+                borderRadius: '20px',
+                marginTop: '15px',
+              }}
+              image={data.imageUrl}
+              title={data.title}
+            />
+            <CardContent sx={{ padding: '16px' }}>
+              <Typography variant="h5" component="div" sx={{ marginBottom: '8px' }}>
+                {data.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '8px' }}>
+                {data.description}
+              </Typography>
+              <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
+                  <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '8px' }}>
+                    Date: {data.date ? format(data.date.toDate(), 'MMMM dd, yyyy') : 'Loading...'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {card.description}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button size="small">Share</Button>
-                  <Button size="small">Learn More</Button>
-                </CardActions>
-              </Card>
-            </div>
-          ))}
-        </Slider>
+                </Grid>
+                <Grid item>
+                  <Grid container alignItems="center">
+                    <Avatar sx={{ marginRight: '4px' }}>JD</Avatar>
+                    <Typography variant="body2" color="text.secondary">
+                      Owner: John Doe
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </div>
+      ))}
+    </Slider>
   );
 };
 

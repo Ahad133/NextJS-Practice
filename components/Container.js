@@ -1,4 +1,3 @@
-// Container.js
 import React, { useState } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -6,18 +5,23 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import AddItemModal from './AddItemModal';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { firestore } from '../firebase/firebaseConfig';
 
 const Container = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
   
-    const handleAdd = (item) => {
-      // Add your logic here to handle the addition of the item
-      console.log('Adding item:', item);
-      // For now, just close the modal
-      setIsModalOpen(false);
+    const handleAdd = async (item) => {
+      try {
+        const itemsCollection = collection(firestore, 'items');
+        await addDoc(itemsCollection, { ...item, date: serverTimestamp() });
+        console.log('Item added to Firebase');
+        setIsModalOpen(false); 
+      } catch (error) {
+        console.error('Error adding item to Firebase:', error);
+      }
     };
   
-
   return (
     <Card style={{ marginTop: '20px', width: '1900px', height: '300px', position: 'relative', borderRadius: '20px' }}>
       <CardMedia
@@ -58,7 +62,7 @@ const Container = () => {
         >
           Add Check-in
         </Button>
-        <AddItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAdd} setIsModalOpen={setIsModalOpen} />
+        <AddItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAdd} />
       </CardContent>
     </Card>
   );

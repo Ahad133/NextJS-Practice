@@ -5,24 +5,28 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { serverTimestamp } from 'firebase/firestore';
+import { firestore } from '../firebase/firebaseConfig';
 
-const AddItemModal = ({ isOpen, onClose, onAdd, setIsModalOpen }) => {
+const preventDefault = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+};
+
+const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (image) {
       const reader = new FileReader();
 
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const imageUrl = reader.result;
         console.log('File uploaded:', imageUrl);
 
-        // Call the onAdd prop to handle the addition of the item
-        onAdd({ title, imageUrl });
-
-        // Close the modal using the prop
-        setIsModalOpen(false);
+        await onAdd({ title, imageUrl });
+        onClose();
       };
 
       reader.readAsDataURL(image);
@@ -35,16 +39,10 @@ const AddItemModal = ({ isOpen, onClose, onAdd, setIsModalOpen }) => {
   };
 
   const handleDrop = (event) => {
-    event.preventDefault();
+    preventDefault(event);
     const file = event.dataTransfer.files[0];
     setImage(file);
   };
-
-  const preventDefault = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -86,7 +84,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd, setIsModalOpen }) => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            alignItems: 'center', // Center the content horizontally
+            alignItems: 'center',
           }}
           onClick={() => document.getElementById('fileInput').click()}
           onDrop={handleDrop}
