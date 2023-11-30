@@ -19,25 +19,22 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
   const [imageUploaded, setImageUploaded] = useState(false);
 
   const handleAdd = async () => {
-    if (image && title) {
-      const reader = new FileReader();
-  
-      reader.onloadend = async () => {
-        const imageUrl = reader.result;
-        console.log('File uploaded:', imageUrl);
-  
-        await onAdd({ title, imageUrl });
-  
-        // Clear the title, image, and imageUploaded after successful upload
-        setTitle('');
-        setImage(null);
-        setImageUploaded(false);
-        onClose();
-      };
-  
-      reader.readAsDataURL(image);
-    }
-  };
+  if (image && title) {
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      const imageUrl = reader.result;
+      console.log('File uploaded:', imageUrl);
+      await onAdd({ title, imageUrl });
+      setTitle('');
+      setImage(null);
+      setImageUploaded(false);
+      onClose();
+    };
+
+    reader.readAsDataURL(image);
+  }
+};
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -49,21 +46,17 @@ const AddItemModal = ({ isOpen, onClose, onAdd }) => {
     preventDefault(event);
     const file = event.dataTransfer.files[0];
     setImage(file);
-    setImageUploaded(false);
+    setImageUploaded(true);
   };
 
   const handleUploadClick = () => {
-    // Check if image is uploaded and fileInput exists
     const fileInput = document.getElementById('fileInput');
-  
-    // If image is not uploaded, or if it's uploaded but the fileInput is not set, open the file input
     if (!imageUploaded || !fileInput) {
       fileInput && fileInput.click();
     }
   };
 
   const handleCancel = () => {
-    // Clear the title and image when the user cancels
     setTitle('');
     setImage(null);
     setImageUploaded(false);
